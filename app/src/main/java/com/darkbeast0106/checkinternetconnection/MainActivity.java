@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     TextView textInternet;
     ConnectivityManager connectivityManager;
     Timer timer;
+    boolean connection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +37,16 @@ public class MainActivity extends AppCompatActivity {
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                textInternet.setVisibility(checkConnected() ? View.VISIBLE : View.GONE);
+                connection = checkConnected();
+                timerMethod();
             }
         };
         timer.schedule(task, 0,5000);
         super.onResume();
+    }
+
+    private void timerMethod() {
+        runOnUiThread(timerTick);
     }
 
     @Override
@@ -53,6 +59,8 @@ public class MainActivity extends AppCompatActivity {
     // de mobil adatforgalmat spórolunk azzal, hogy feltételezzük,
     // hogy ha van mobil kapcsolat akkor internet is van.
     private boolean checkConnected() {
+        return hostAvailable("www.google.com", 80);
+        /*
         NetworkInfo.State mobilState
                 = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
         NetworkInfo.State wifiState
@@ -61,9 +69,11 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         if (wifiState.equals(NetworkInfo.State.CONNECTED)){
-            return hostAvailable("www.google.com", 80);
+
         }
         return false;
+        */
+
     }
 
     public boolean hostAvailable(String host, int port) {
@@ -76,6 +86,13 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
     }
+
+    private final Runnable timerTick = new Runnable() {
+        @Override
+        public void run() {
+            textInternet.setVisibility(connection ? View.VISIBLE : View.GONE);
+        }
+    };
 
     private void init() {
         textInternet = findViewById(R.id.text_internet);
